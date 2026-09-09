@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Usage:  source ./activate
+# Running this as a program cannot change your current shell. That is why
+# `.venv/bin/activate` printed "Permission denied" — it is not executable,
+# and even if it were, the activation would vanish when the script exited.
+
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    echo "error: this file must be sourced, not executed." >&2
+    echo "    source ./activate" >&2
+    echo "If your prompt already shows (.venv), skip this and run: jarvis doctor" >&2
+    exit 1
+fi
+
+_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ ! -f "${_ROOT}/.venv/bin/activate" ]]; then
+    echo "error: ${_ROOT}/.venv is missing. Run ./scripts/setup.sh first." >&2
+    return 1
+fi
+# shellcheck disable=SC1091
+source "${_ROOT}/.venv/bin/activate"
+echo "venv active: $(command -v python)  ($(python -c 'import sys;print(sys.version.split()[0])'))"
+echo "Next: jarvis doctor"

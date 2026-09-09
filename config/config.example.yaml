@@ -1,0 +1,108 @@
+# Copy to config/config.yaml and edit. The copy is gitignored.
+# Every value here is a default that also lives in src/jarvis/config.py, so a
+# partial config.yaml is fine -- only override what you care about.
+
+general:
+  # Skip Gemini entirely and route with keyword matching only. Useful for
+  # testing offline behaviour, or if you have not set an API key yet.
+  offline_only: false
+  # Unload the Whisper model after this many seconds of no activity, so the
+  # idle daemon stays small. Set to 0 to keep it loaded forever.
+  idle_unload_seconds: 300
+  # Give up on a follow-up question if you say nothing for this long.
+  conversation_turn_timeout: 15
+
+audio:
+  # null = system default. Run `jarvis devices` to see the list, then put
+  # either the integer index or a substring of the device name here.
+  input_device: null
+  output_device: null
+  sample_rate: 16000
+
+wake:
+  engine: openwakeword
+  model: hey_jarvis_v0.1
+  # Raise toward 0.7 if it triggers on background noise, lower toward 0.4 if
+  # it misses you. 0.5 is a good starting point.
+  threshold: 0.5
+  # Ignore further detections for this long after a trigger.
+  cooldown_seconds: 2.0
+
+stt:
+  engine: faster_whisper
+  # tiny.en | base.en | small.en -- base.en is the sweet spot on this CPU.
+  model: base.en
+  compute_type: int8
+  beam_size: 1
+  language: en
+
+listen:
+  # Stop recording after this much trailing silence.
+  silence_ms: 800
+  # Hard cap on a single utterance.
+  max_seconds: 15
+  # If you never start talking after the beep, bail out after this long.
+  start_timeout_seconds: 6
+  # Ignore blips shorter than this as spurious noise.
+  min_speech_ms: 300
+
+tts:
+  engine: piper          # piper | espeak | none
+  piper_binary: piper    # resolved on PATH if not an absolute path
+  voice: en_GB-alan-medium
+  voices_dir: ~/.local/share/jarvis/piper
+  # Short rising tone when the wake word fires, so you know it heard you.
+  beep_on_wake: true
+
+brain:
+  provider: gemini
+  model: gemini-2.5-flash
+  timeout_seconds: 15
+  temperature: 0.2
+
+projects:
+  root: ~/Workspace
+  # How deep under root to look for git repos when seeding recent projects.
+  scan_depth: 2
+  editor_command: cursor
+
+shell:
+  # Commands whose first word is in here run without asking.
+  allowlist:
+    - ls
+    - pwd
+    - whoami
+    - date
+    - uptime
+    - df
+    - free
+    - uname
+    - hostname
+    - git
+    - systemctl
+    - journalctl
+    - echo
+    - cat
+    - which
+  # Anything matching these is refused outright, no confirmation offered.
+  denylist_patterns:
+    - '\brm\s+-[a-zA-Z]*[rf]'
+    - '\bdd\s+if='
+    - '\bmkfs'
+    - '\bshred\b'
+    - '>\s*/dev/[sh]d'
+    - '\bsudo\b'
+    - '\bsu\b'
+    - '\bchmod\s+777\s+/'
+    - '\bchown\b.*\s/\s*$'
+    - 'curl[^|]*\|\s*(ba)?sh'
+    - 'wget[^|]*\|\s*(ba)?sh'
+    - ':\(\)\{.*\}'          # fork bomb
+    - '\bshutdown\b'
+    - '\breboot\b'
+    - '\bpoweroff\b'
+
+paths:
+  data_dir: ~/.local/share/jarvis
+  log_file: ~/.local/state/jarvis/jarvis.log
+  log_level: INFO

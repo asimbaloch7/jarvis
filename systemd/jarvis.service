@@ -1,0 +1,31 @@
+[Unit]
+Description=Jarvis voice assistant
+Documentation=https://github.com
+After=pipewire.service pipewire-pulse.service graphical-session.target
+Wants=pipewire.service
+StartLimitBurst=5
+StartLimitIntervalSec=120
+
+[Service]
+Type=simple
+Environment=PYTHONUNBUFFERED=1
+# WorkingDirectory and ExecStart are filled in by scripts/install_service.sh.
+# WorkingDirectory is intentionally unquoted: systemd does not parse quotes
+# there, and a quoted path is rejected as a "bad unit file setting".
+# ExecStart's binary is quoted so a checkout path with spaces still works.
+WorkingDirectory=__JARVIS_HOME__
+ExecStart="__JARVIS_HOME__/.venv/bin/jarvis" run --quiet
+
+Restart=on-failure
+RestartSec=5
+Nice=5
+
+NoNewPrivileges=true
+PrivateTmp=true
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=jarvis
+
+[Install]
+WantedBy=default.target

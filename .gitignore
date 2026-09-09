@@ -1,0 +1,23 @@
+# Secrets and local config
+.env
+config/config.yaml
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.venv-test/
+venv/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+
+# Models and runtime data (downloaded, not vendored)
+models/
+*.onnx
+*.tflite
+
+# Logs
+*.log
