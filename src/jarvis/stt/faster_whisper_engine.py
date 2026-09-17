@@ -64,9 +64,11 @@ class FasterWhisperEngine(SttEngine):
             audio,
             language=self.cfg.language,
             beam_size=self.cfg.beam_size,
-            vad_filter=True,
-            vad_parameters={"min_silence_duration_ms": 300},
+            # A second VAD pass on a clip we already endpointed just adds
+            # latency and sometimes swallows short commands whole.
+            vad_filter=False,
             condition_on_previous_text=False,
+            without_timestamps=True,
         )
         text = " ".join(segment.text.strip() for segment in segments).strip()
         log.info(

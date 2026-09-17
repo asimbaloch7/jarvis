@@ -47,6 +47,16 @@ _FILLER = re.compile(
     re.IGNORECASE,
 )
 
+_WAKE_PREFIX = re.compile(
+    r"^\s*(hey[\s,]+)?jarvis[\s,.:;!\-]*",
+    re.IGNORECASE,
+)
+
+
+def strip_wake_phrase(text: str) -> str:
+    """Drop a leading 'Hey Jarvis' so one-shot commands still route."""
+    return _WAKE_PREFIX.sub("", text or "").strip()
+
 
 def normalize(text: str) -> str:
     """Strip filler, punctuation, and casing for matching purposes."""
