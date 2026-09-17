@@ -32,19 +32,25 @@ def record_utterance(
     mic: MicStream,
     cfg: ListenConfig,
     preroll: list[np.ndarray] | None = None,
+    flush: bool = True,
 ) -> Utterance:
     """Record until the speaker stops.
 
     `preroll` is audio captured just before this call (typically the tail of
     the wake-word buffer), prepended so we don't clip the first syllable of a
     command spoken immediately after "Hey Jarvis".
+
+    Pass `flush=False` after a wake detection so queued command audio is kept.
+    Follow-up questions should flush, or TTS playback leaks into the recording.
     """
     vad = make_vad(mic.sample_rate)
-    collected: list[np.ndarray] = list(preroll or [])
+    prefix = list(preroll or [])
+    collected: list[np.ndarray] = []
     silence_chunks_needed = max(1, int(cfg.silence_ms / CHUNK_MS))
     min_speech_chunks = max(1, int(cfg.min_speech_ms / CHUNK_MS))
 
-    mic.flush()
+    if flush:
+        mic.flush()
 
     speech_chunks = 0
     trailing_silence = 0
@@ -76,14 +82,11 @@ def record_utterance(
             collected.append(chunk)
         elif started:
             trailing_silence += 1
-            # Keep the trailing silence in the clip; Whisper handles it fine
-            # and it avoids clipping soft word endings.
             collected.append(chunk)
             if trailing_silence >= silence_chunks_needed:
                 reason = "silence"
                 break
         else:
-            # Not started yet: hold a small rolling pre-buffer.
             collected.append(chunk)
             if len(collected) > 6:
                 collected.pop(0)
@@ -91,10 +94,11 @@ def record_utterance(
     if speech_chunks < min_speech_chunks:
         reason = "no_speech"
 
-    if not collected:
+    pieces = prefix + collected
+    if not pieces:
         return Utterance(np.zeros(0, dtype=np.float32), 0.0, "no_speech")
 
-    audio_int16 = np.concatenate(collected)
+    audio_int16 = np.concatenate(pieces)
     audio = audio_int16.astype(np.float32) / 32768.0
     duration = len(audio) / mic.sample_rate
     log.info("Recorded %.2fs of audio (%s)", duration, reason)

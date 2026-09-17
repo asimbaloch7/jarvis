@@ -39,8 +39,8 @@ class AudioConfig:
 class WakeConfig:
     engine: str = "openwakeword"
     model: str = "hey_jarvis_v0.1"
-    threshold: float = 0.5
-    cooldown_seconds: float = 2.0
+    threshold: float = 0.2
+    cooldown_seconds: float = 1.5
 
 
 @dataclass
@@ -54,10 +54,10 @@ class SttConfig:
 
 @dataclass
 class ListenConfig:
-    silence_ms: int = 800
+    silence_ms: int = 500
     max_seconds: int = 15
     start_timeout_seconds: int = 6
-    min_speech_ms: int = 300
+    min_speech_ms: int = 250
 
 
 @dataclass

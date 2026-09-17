@@ -9,6 +9,7 @@ from jarvis.brain.answers import (
     resolve_choice,
     resolve_confirm,
     slugify_spoken_name,
+    strip_wake_phrase,
 )
 
 
@@ -89,3 +90,16 @@ def test_is_cancel():
     assert is_cancel("never mind")
     assert is_cancel("Forget it.")
     assert not is_cancel("open firefox")
+
+
+@pytest.mark.parametrize(
+    "said,expected",
+    [
+        ("Hey Jarvis open firefox", "open firefox"),
+        ("jarvis, what's the time", "what's the time"),
+        ("open firefox", "open firefox"),
+        ("Hey Jarvis", ""),
+    ],
+)
+def test_strip_wake_phrase(said, expected):
+    assert strip_wake_phrase(said) == expected

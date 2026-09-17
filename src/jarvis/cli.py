@@ -238,19 +238,26 @@ def cmd_history(args) -> int:
 
 
 def cmd_devices(args) -> int:
-    from .audio.input import AudioUnavailable, list_devices
+    from .audio.input import AudioUnavailable, list_devices, output_only_headsets
 
     _load(args)
     try:
         devices = list_devices()
-    except AudioUnavailable as exc:
-        print(f"error: {exc}", file=sys.stderr)
+    except AudioUnavailable as extra:
+        print(f"error: {extra}", file=sys.stderr)
         return 1
     print("  idx  in  out  name")
     for index, device in enumerate(devices):
         print(
             f"  {index:3}  {device['max_input_channels']:2}  "
             f"{device['max_output_channels']:3}  {device['name']}"
+        )
+    print("\nUse a row with in > 0 as audio.input_device (index or name).")
+    print("Connect the headset first, then restart `jarvis run`.")
+    for name in output_only_headsets():
+        print(
+            f"\nnote: {name!r} has no microphone in the current profile.\n"
+            "      Switch it to Headset / Hands-Free in GNOME Sound settings."
         )
     return 0
 

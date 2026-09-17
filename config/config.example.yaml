@@ -13,8 +13,9 @@ general:
   conversation_turn_timeout: 15
 
 audio:
-  # null = system default. Run `jarvis devices` to see the list, then put
-  # either the integer index or a substring of the device name here.
+  # null = auto. Headsets (JBL / AirPods / Bluetooth) are preferred when they
+  # expose a microphone. Pin a device with an index or a name substring from
+  # `jarvis devices`, e.g. "JBL" or "Built-in".
   input_device: null
   output_device: null
   sample_rate: 16000
@@ -22,11 +23,11 @@ audio:
 wake:
   engine: openwakeword
   model: hey_jarvis_v0.1
-  # Raise toward 0.7 if it triggers on background noise, lower toward 0.4 if
-  # it misses you. 0.5 is a good starting point.
-  threshold: 0.5
+  # Raise toward 0.5 if it triggers on background noise, lower toward 0.12 if
+  # it misses you. 0.2 is a good starting point on a laptop mic.
+  threshold: 0.2
   # Ignore further detections for this long after a trigger.
-  cooldown_seconds: 2.0
+  cooldown_seconds: 1.5
 
 stt:
   engine: faster_whisper
@@ -38,7 +39,7 @@ stt:
 
 listen:
   # Stop recording after this much trailing silence.
-  silence_ms: 800
+  silence_ms: 500
   # Hard cap on a single utterance.
   max_seconds: 15
   # If you never start talking after the beep, bail out after this long.

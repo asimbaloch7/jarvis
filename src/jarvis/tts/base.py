@@ -11,7 +11,7 @@ from abc import ABC, abstractmethod
 
 from ..audio.output import Speaker
 from ..config import TtsConfig
-from ..logging_setup import get_logger
+from ..logging_setup import get_logger, print_status
 
 log = get_logger("tts")
 
@@ -50,6 +50,7 @@ def create_tts_engine(cfg: TtsConfig, speaker: Speaker | None = None) -> TtsEngi
         if piper.available():
             return piper
         log.warning("Piper is not usable, falling back to espeak-ng")
+        print_status("Piper is not usable, falling back to espeak-ng", warn=True)
         engine = "espeak"
 
     if engine in ("espeak", "espeak-ng"):
@@ -59,5 +60,9 @@ def create_tts_engine(cfg: TtsConfig, speaker: Speaker | None = None) -> TtsEngi
         if espeak.available():
             return espeak
         log.warning("espeak-ng is not installed either; Jarvis will print instead of speak")
+        print_status(
+            "espeak-ng is not installed either; Jarvis will print instead of speak",
+            warn=True,
+        )
 
     return NullTts()
