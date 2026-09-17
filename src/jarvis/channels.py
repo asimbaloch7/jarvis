@@ -12,7 +12,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 from .config import Config
-from .logging_setup import get_logger
+from .logging_setup import get_logger, print_status
 
 if TYPE_CHECKING:  # audio imports are deferred, see below
     from .audio.input import MicStream
@@ -34,6 +34,10 @@ class Channel(ABC):
 
     def cue(self, kind: str) -> None:
         """Optional non-verbal signal: 'wake', 'done', 'error'."""
+
+    def mark_processing_announced(self) -> bool:
+        """True if this channel already printed the processing status."""
+        return False
 
 
 class TextChannel(Channel):
@@ -81,14 +85,26 @@ class VoiceChannel(Channel):
         self.stt = stt
         self.tts = tts
         self.speaker = speaker
+        self._processing_announced = False
+
+    def mark_processing_announced(self) -> bool:
+        announced = self._processing_announced
+        self._processing_announced = False
+        return announced
 
     def speak(self, text: str) -> None:
         if not text.strip():
             return
+        print_status("🗣️  Responding...")
         log.info("Speaking: %s", text)
         self.tts.speak(text)
 
-    def listen(self, timeout: float | None = None) -> str | None:
+    def listen(
+        self,
+        timeout: float | None = None,
+        preroll: list | None = None,
+        flush: bool = True,
+    ) -> str | None:
         from .audio.recorder import record_utterance
 
         listen_cfg = self.cfg.listen
@@ -98,9 +114,14 @@ class VoiceChannel(Channel):
 
             listen_cfg = replace(listen_cfg, start_timeout_seconds=int(timeout))
 
-        utterance = record_utterance(self.mic, listen_cfg)
+        print_status("🎧 Capturing your speech...")
+        utterance = record_utterance(
+            self.mic, listen_cfg, preroll=preroll, flush=flush
+        )
         if not utterance.has_speech:
             return None
+        print_status("⚙️  Processing your request...")
+        self._processing_announced = True
         text = self.stt.transcribe(utterance.audio)
         return text or None
 

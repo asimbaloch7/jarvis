@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from ..config import Config
-from ..logging_setup import get_logger
+from ..logging_setup import get_logger, print_status
 from ..skills.base import Skill
 from ..skills.registry import SkillRegistry
 from ..state.conversation import Conversation
@@ -59,6 +59,7 @@ class Router:
                 return self._route_with_gemini(text, conversation)
             except BrainUnavailable as exc:
                 log.warning("Falling back to keyword routing: %s", exc)
+                print_status(f"Falling back to keyword routing: {exc}", warn=True)
                 decision = self._route_with_keywords(text)
                 decision.degraded = True
                 if not decision.has_skill:

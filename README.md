@@ -211,7 +211,7 @@ jarvis wake
 jarvis wake --show-scores    # live confidence values, for tuning the threshold
 ```
 
-If it never fires, lower `wake.threshold` toward `0.4`. If it fires at random
+If it never fires, lower `wake.threshold` toward `0.12`. If it fires at random
 noise, raise it toward `0.7`.
 
 **Recording and transcription only.** No wake word, no Gemini.
@@ -297,7 +297,7 @@ The settings you are most likely to touch:
 
 | Setting | Default | What it does |
 |---|---|---|
-| `wake.threshold` | `0.5` | Raise for fewer false triggers, lower to be heard more easily |
+| `wake.threshold` | `0.2` | Raise for fewer false triggers, lower to be heard more easily |
 | `stt.model` | `base.en` | `tiny.en` is faster, `small.en` is more accurate |
 | `listen.silence_ms` | `800` | How long a pause ends your sentence |
 | `brain.model` | `gemini-2.5-flash` | Any Gemini model with function calling |

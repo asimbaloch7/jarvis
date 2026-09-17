@@ -43,6 +43,7 @@ class OpenWakeWordDetector(WakeWordDetector):
             ) from exc
 
         self._key = self._pick_key(model_name)
+        self._logged_keys = False
         log.info("Wake model %r loaded (threshold %.2f)", self._key, cfg.threshold)
 
     def _pick_key(self, requested: str) -> str:
@@ -56,8 +57,17 @@ class OpenWakeWordDetector(WakeWordDetector):
         return keys[0]
 
     def score(self, chunk: np.ndarray) -> float:
+        if chunk.dtype != np.int16:
+            chunk = chunk.astype(np.int16)
         predictions = self._model.predict(chunk)
-        return float(predictions.get(self._key, 0.0))
+        if not self._logged_keys:
+            log.info("Wake predictor keys: %s", list(predictions.keys()))
+            self._logged_keys = True
+        if self._key in predictions:
+            return float(predictions[self._key])
+        if predictions:
+            return float(max(predictions.values()))
+        return 0.0
 
     def reset(self) -> None:
         try:

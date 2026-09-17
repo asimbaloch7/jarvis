@@ -16,7 +16,7 @@ from .brain.gemini import BrainUnavailable
 from .brain.router import Router
 from .channels import Channel
 from .config import Config
-from .logging_setup import get_logger
+from .logging_setup import get_logger, print_status
 from .skills.base import (
     Ask,
     ConversationCancelled,
@@ -71,6 +71,9 @@ class Engine:
         self.conversation.reset()
         self.conversation.user(text)
         log.info("Utterance: %r", text)
+
+        if not self.channel.mark_processing_announced():
+            print_status("⚙️  Processing your request...")
 
         if is_cancel(text):
             self._say("Never mind, then.")
@@ -130,6 +133,7 @@ class Engine:
             return Outcome(spoken=message, skill=skill.name, handled=True)
         except Exception as exc:
             log.error("Skill %s crashed: %s\n%s", skill.name, exc, traceback.format_exc())
+            print_status(f"Skill {skill.name} crashed: {exc}", warn=True)
             message = f"Something went wrong running {skill.name.replace('_', ' ')}."
             self.channel.cue("error")
             self._say(message)
